@@ -15,3 +15,7 @@ podman run --net=host idracbootfromiso -r 10.19.0.85 -u admin -p "aw3s0m3P4ssw0r
 podman run --net=host idracbootfromiso -r 10.19.0.86 -u admin -p "aw3s0m3P4ssw0rD" -i http://192.168.5.1/fedcos-ocp.iso
 ```
 
+Initialize the first virtual disk first
+```
+podman run --net=host idracbootfromiso -d -r 10.19.0.86 -u admin -p "aw3s0m3P4ssw0rD" -i http://192.168.5.1/fedcos-ocp.iso
+```
