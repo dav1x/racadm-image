@@ -11,8 +11,10 @@ if [[ $# -lt 8 ]]; then
 	usage "Insufficient number of parameters"
 fi
 
-while getopts ":r:u:p:i:d" o; do
-	case "${o}" in
+while getopts dr:u:p:i: option; do
+        case "${option}" in
+                d)
+                        DELETE="TRUE";;
 		r)
 			HOST=${OPTARG};;
 		u)
@@ -23,7 +25,6 @@ while getopts ":r:u:p:i:d" o; do
 			ISO_URL=${OPTARG}
 			[[ $ISO_URL =~ http://.* ]] || usage "Iso should be with http prefix"
 			;;
-		d)	DELETE="TRUE";;
 		*)
 			usage;;
 	esac
