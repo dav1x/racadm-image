@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euoE pipefail
+set -eoE pipefail
 
 usage() 	{
 	echo "${@}"
