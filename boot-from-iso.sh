@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -eoE pipefail
+# set -eoE pipefail
+# Testing for pod usage
 
 usage() 	{
 	echo "${@}"
