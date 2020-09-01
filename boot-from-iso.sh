@@ -51,19 +51,22 @@ fi
 echo '******* Disconnecting existing image (just in case)'
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -d
 
-echo '******* Showing idrac remoteimage status'
-/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
-
+#echo '******* Showing idrac remoteimage status'
+#/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
+sleep 5
 
 echo "******* Connecting remote iso $ISO_URL to boot from"
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -c -l $ISO_URL
 
-echo '******* Showing idrac remoteimage status'
-/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
+sleep 5
+
+#echo '******* Showing idrac remoteimage status'
+#/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
 
 if ! /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s | grep $ISO_URL; then
 	usage 'ISO was not configured correctly'
 fi
+sleep 5
 
 echo '******* Setting idrac to boot once from the attached iso'
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD set iDRAC.VirtualMedia.BootOnce 1
