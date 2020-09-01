@@ -38,8 +38,8 @@ echo ISO_URL = $ISO_URL
 
 if [ $DELETE ]; then
 echo '******* Initializing virtual disk to ensure clean boot to ISO'
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD storage init:Disk.Virtual.0:RAID.Integrated.1-1 -speed fast 
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD jobqueue create RAID.Integrated.1-1 -s TIME_NOW 
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD storage init:Disk.Virtual.0:RAID.Integrated.1-1 -speed fast 
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD jobqueue create RAID.Integrated.1-1 -s TIME_NOW 
 
 fi
 
@@ -48,27 +48,27 @@ if ! curl --output /dev/null --silent --head --fail "$ISO_URL"; then
 fi
 
 echo '******* Disconnecting existing image (just in case)'
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD remoteimage -d
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -d
 
 echo '******* Showing idrac remoteimage status'
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD remoteimage -s
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
 
 
 echo "******* Connecting remote iso $ISO_URL to boot from"
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD remoteimage -c -l $ISO_URL
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -c -l $ISO_URL
 
 echo '******* Showing idrac remoteimage status'
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD remoteimage -s
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
 
-if ! /opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD remoteimage -s | grep $ISO_URL; then
+if ! /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s | grep $ISO_URL; then
 	usage 'ISO was not configured correctly'
 fi
 
 echo '******* Setting idrac to boot once from the attached iso'
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD set iDRAC.VirtualMedia.BootOnce 1
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD set iDRAC.ServerBoot.FirstBootDevice VCD-DVD
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD set iDRAC.VirtualMedia.BootOnce 1
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD set iDRAC.ServerBoot.FirstBootDevice VCD-DVD
 
 echo '******* Rebooting the server'
-/opt/dell/srvadmin/bin/idracadm7 -r $HOST -u $USER -p $PASSWORD serveraction powercycle
+/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD serveraction powercycle
 
 echo '******* Done'
