@@ -8,7 +8,7 @@ usage()         {
 }
 
 dracversion()   {
-        /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r 10.19.0.86 -u root -p 100Mgmt- get idrac.Info.ServerGen | grep ServerGen | cut -d "=" -f2 | sed 's/G//'
+        /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD get idrac.Info.ServerGen | grep ServerGen | cut -d "=" -f2 | sed 's/G//'
         exit 0
 }
 clearvd()       {
