@@ -41,14 +41,14 @@ while getopts vdr:u:p:i: option; do
 done
 shift $((OPTIND-1))
 
+if [ $VERSION ]; then
+        dracversion
+fi
+
 echo HOST = $HOST
 echo USER = $USER
 echo PASSWORD = $PASSWORD
 echo ISO_URL = $ISO_URL
-
-if [ $VERSION ]; then
-        dracversion
-fi
 
 if [ $DELETE ]; then
         clearvd
