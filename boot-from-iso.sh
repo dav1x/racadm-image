@@ -1,34 +1,43 @@
 #!/usr/bin/env bash
-# set -eoE pipefail
-# Testing for pod usage
+set -eoE pipefail
 
-usage() 	{
-	echo "${@}"
-	echo "Usage: $0 [-d] -r idrac-hostname -u user -p password -i http://iso-url" 1>&2; 
-	exit 1; 
+usage()         {
+        echo "${@}"
+        echo "Usage: $0 [-v] [-d] -r idrac-hostname -u user -p password -i http://iso-url" 1>&2;
+        exit 1;
 }
 
+dracversion()   {
+        /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD get idrac.Info.ServerGen
+        exit 0
+}
+clearvd()       {
+        echo '******* Initializing virtual disk to ensure clean boot to ISO *******'
+        /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD storage init:Disk.Virtual.0:RAID.Integrated.1-1 -speed fast
+        /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD jobqueue create RAID.Integrated.1-1 -s TIME_NOW
+}
 if [[ $# -lt 8 ]]; then
-	usage "Insufficient number of parameters"
+        usage "Insufficient number of parameters"
 fi
 
-while getopts dr:u:p:i: option; do
+while getopts vdr:u:p:i: option; do
         case "${option}" in
+                v)      VERSION="TRUE";;
                 d)
                         DELETE="TRUE";;
-		r)
-			HOST=${OPTARG};;
-		u)
-			USER=${OPTARG};;
-		p)
-			PASSWORD=${OPTARG};;
-		i)
-			ISO_URL=${OPTARG}
-			[[ $ISO_URL =~ http://.* ]] || usage "Iso should be with http prefix"
-			;;
-		*)
-			usage;;
-	esac
+                r)
+                        HOST=${OPTARG};;
+                u)
+                        USER=${OPTARG};;
+                p)
+                        PASSWORD=${OPTARG};;
+                i)
+                        ISO_URL=${OPTARG}
+                        [[ $ISO_URL =~ http://.* ]] || usage "Iso should be with http prefix"
+                        ;;
+                *)
+                        usage;;
+        esac
 done
 shift $((OPTIND-1))
 
@@ -37,39 +46,37 @@ echo USER = $USER
 echo PASSWORD = $PASSWORD
 echo ISO_URL = $ISO_URL
 
-if [ $DELETE ]; then
-echo '******* Initializing virtual disk to ensure clean boot to ISO'
-/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD storage init:Disk.Virtual.0:RAID.Integrated.1-1 -speed fast 
-/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD jobqueue create RAID.Integrated.1-1 -s TIME_NOW 
+if [ $VERSION ]; then
+        dracversion
+fi
 
+if [ $DELETE ]; then
+        clearvd
+        # Move on to mounting the ISO
 fi
 
 if ! curl --output /dev/null --silent --head --fail "$ISO_URL"; then
-	  usage "******* ISO does not exist in the provided url: $ISO_URL"
+          usage "******* ISO does not exist in the provided url: $ISO_URL"
 fi
 
-echo '******* Disconnecting existing image (just in case)'
+echo '******* Disconnecting existing image *******'
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -d
 
-#echo '******* Showing idrac remoteimage status'
-#/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
-
-echo "******* Connecting remote iso $ISO_URL to boot from"
+echo "******* Attaching remote ISO $ISO_URL to virtual media *******"
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -c -l $ISO_URL
 
-#echo '******* Showing idrac remoteimage status'
-#/opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s
 
 if ! /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD remoteimage -s | grep $ISO_URL; then
-	usage 'ISO was not configured correctly'
-	exit 1
+        usage 'ISO was not configured correctly'
+else
+        echo "******* $ISO_URL Mounted successfully *******"
 fi
 
-echo '******* Setting idrac to boot once from the attached iso'
+echo '******* Setting idrac to boot once from the attached iso *******'
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD set iDRAC.VirtualMedia.BootOnce 1
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD set iDRAC.ServerBoot.FirstBootDevice VCD-DVD
 
-echo '******* Rebooting the server'
+echo '******* Rebooting the server *******'
 /opt/dell/srvadmin/bin/idracadm7 --nocertwarn -r $HOST -u $USER -p $PASSWORD serveraction powercycle
 
-echo '******* Done'
+echo '******* Done *******'
